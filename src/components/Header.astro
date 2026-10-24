@@ -1,0 +1,44 @@
+---
+import business from '../data/business.json';
+import { url } from '../lib/url';
+---
+
+<header>
+  <div class="page row">
+    <a class="name" href={url()}>{business.name}</a>
+    <nav>
+      <a href={url('#services')}>Services</a>
+      <a href={url('#pricing')}>Pricing</a>
+      <a href={url('about/')}>About</a>
+      <a href={url('#contact')}>Contact</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  header {
+    background: var(--navy);
+    padding: 1rem 0;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .name {
+    font-family: var(--serif);
+    font-size: 1.4rem;
+    color: var(--gold);
+    text-decoration: none;
+  }
+  nav {
+    display: flex;
+    gap: 1.25rem;
+  }
+  nav a {
+    color: var(--white);
+    text-decoration: none;
+  }
+</style>

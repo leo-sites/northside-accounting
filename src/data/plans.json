@@ -1,0 +1,21 @@
+[
+  {
+    "name": "Starter",
+    "price": "$149 / month",
+    "audience": "Freelancers and sole proprietors",
+    "features": ["Monthly bookkeeping", "Quarterly tax estimates", "Annual tax return"]
+  },
+  {
+    "name": "Growth",
+    "price": "$349 / month",
+    "audience": "Small businesses with up to 10 employees",
+    "features": ["Everything in Starter", "Payroll for up to 10 people", "Monthly financial report"],
+    "highlighted": true
+  },
+  {
+    "name": "Advisory",
+    "price": "Custom",
+    "audience": "Growing companies that need a part-time CFO",
+    "features": ["Everything in Growth", "Cash flow forecasting", "Quarterly strategy meeting"]
+  }
+]

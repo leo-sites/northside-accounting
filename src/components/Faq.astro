@@ -1,0 +1,28 @@
+---
+import faq from '../data/faq.json';
+---
+
+<section>
+  <div class="page">
+    <h2>Frequently asked questions</h2>
+    {
+      faq.map((item) => (
+        <details>
+          <summary>{item.question}</summary>
+          <p>{item.answer}</p>
+        </details>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  details {
+    border-bottom: 1px solid #ddd;
+    padding: 1rem 0;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+</style>

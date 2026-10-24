@@ -1,0 +1,41 @@
+---
+const areas = [
+  { heading: 'Bookkeeping', body: 'We reconcile your accounts every month so your numbers are always up to date.' },
+  { heading: 'Payroll', body: 'Direct deposit, tax filings and year-end W-2s handled for you.' },
+  { heading: 'Tax preparation', body: 'Business and personal returns, prepared and filed by certified accountants.' },
+  { heading: 'Advisory', body: 'Budgets, forecasts and a second opinion before big decisions.' },
+];
+---
+
+<section id="services">
+  <div class="page">
+    <h2>What we do</h2>
+    <dl>
+      {
+        areas.map((area) => (
+          <div>
+            <dt>{area.heading}</dt>
+            <dd>{area.body}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>
+
+<style>
+  dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 1.5rem;
+  }
+  dt {
+    font-family: var(--serif);
+    font-size: 1.2rem;
+    color: var(--navy);
+  }
+  dd {
+    margin: 0.5rem 0 0;
+    color: var(--text-muted);
+  }
+</style>

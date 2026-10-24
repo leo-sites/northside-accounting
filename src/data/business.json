@@ -1,0 +1,12 @@
+{
+  "name": "Northside Accounting",
+  "tagline": "Clear books. Fewer surprises at tax time.",
+  "phone": "618 555 0177",
+  "email": "office@northside-accounting.example",
+  "address": "1200 Commerce Drive, Floor 3, Springfield",
+  "hours": [
+    { "days": "Monday – Friday", "time": "9:00 am – 5:00 pm" },
+    { "days": "Saturday (Feb – Apr only)", "time": "10:00 am – 2:00 pm" }
+  ],
+  "linkedin": "https://linkedin.com/company/northside-accounting-example"
+}

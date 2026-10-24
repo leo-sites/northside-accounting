@@ -1,0 +1,50 @@
+:root {
+  --navy: #1d2b45;
+  --gold: #c8a24a;
+  --paper: #f6f5f1;
+  --white: #ffffff;
+  --text: #1f2430;
+  --text-muted: #5c6475;
+  --serif: 'Palatino Linotype', Palatino, serif;
+  --sans: 'Segoe UI', Roboto, sans-serif;
+  --page-width: 66rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--sans);
+  color: var(--text);
+  background: var(--paper);
+  line-height: 1.65;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  color: var(--navy);
+  line-height: 1.25;
+}
+
+.page {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+section {
+  padding: 3.5rem 0;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--navy);
+  color: var(--white);
+  text-decoration: none;
+  border-radius: 0.25rem;
+}

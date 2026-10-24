@@ -1,0 +1,48 @@
+---
+import plans from '../data/plans.json';
+---
+
+<section id="pricing" class="pricing">
+  <div class="page">
+    <h2>Simple monthly plans</h2>
+    <div class="plans">
+      {
+        plans.map((plan) => (
+          <article class:list={{ featured: plan.highlighted }}>
+            <h3>{plan.name}</h3>
+            <p class="price">{plan.price}</p>
+            <p class="audience">{plan.audience}</p>
+            <ul>
+              {plan.features.map((feature) => <li>{feature}</li>)}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .pricing {
+    background: var(--white);
+  }
+  .plans {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1.5rem;
+  }
+  article {
+    border: 1px solid #ddd;
+    padding: 1.5rem;
+  }
+  article.featured {
+    border: 2px solid var(--gold);
+  }
+  .price {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .audience {
+    color: var(--text-muted);
+  }
+</style>

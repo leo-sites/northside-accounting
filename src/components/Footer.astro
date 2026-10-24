@@ -1,0 +1,42 @@
+---
+import business from '../data/business.json';
+
+const telLink = `tel:+1${business.phone.replace(/\D/g, '')}`;
+---
+
+<footer id="contact">
+  <div class="page grid">
+    <div>
+      <h2>Contact</h2>
+      <p>{business.address}</p>
+      <p>Phone: <a href={telLink}>{business.phone}</a></p>
+      <p>Email: <a href={`mailto:${business.email}`}>{business.email}</a></p>
+    </div>
+    <div>
+      <h3>Office hours</h3>
+      {business.hours.map((row) => <p>{row.days}: {row.time}</p>)}
+      <p><a href={business.linkedin}>LinkedIn</a></p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  footer {
+    background: var(--navy);
+    color: var(--white);
+    padding: 3rem 0;
+  }
+  footer h2,
+  footer h3 {
+    color: var(--gold);
+  }
+  footer a {
+    color: var(--gold);
+  }
+  .grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: space-between;
+  }
+</style>
