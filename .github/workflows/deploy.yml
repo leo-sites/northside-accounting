@@ -1,11 +1,11 @@
-# Builds the site and copies it to the VPS, where Caddy serves it.
+# Builds the site and uploads it as the "site" artifact. Site Change Agents, running next to the web
+# server, waits for this run, downloads the artifact and publishes it:
 #   Pull request -> <SITES_BASE_URL>/previews/<repo>/pr-<number>/
 #   Merge to main -> <SITES_BASE_URL>/<repo>/
+# Nothing reaches into the server: no SSH keys or open ports, so it works behind a tunnel or NAT.
 # This file is the same in every test site; the site ID is the repository name.
 #
-# Repository (or organization) settings it needs:
-#   secrets: VPS_HOST, VPS_USER, VPS_SSH_KEY, VPS_KNOWN_HOSTS, DEPLOY_WEBHOOK_SECRET (optional)
-#   variables: SITES_BASE_URL, VPS_SITES_DIR (default /srv/sites), DEPLOY_WEBHOOK_URL (optional)
+# Repository (or organization) variable it needs: SITES_BASE_URL, e.g. https://sites.example.com
 
 name: Deploy
 
@@ -13,7 +13,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
 
 concurrency:
   group: deploy-${{ github.event.pull_request.number || 'production' }}
@@ -24,12 +24,10 @@ permissions:
 
 env:
   SITE_ID: ${{ github.event.repository.name }}
-  SITES_DIR: ${{ vars.VPS_SITES_DIR || '/srv/sites' }}
   PR_NUMBER: ${{ github.event.pull_request.number }}
 
 jobs:
-  deploy:
-    if: github.event.action != 'closed'
+  build:
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
@@ -44,21 +42,18 @@ jobs:
 
       - run: npm ci
 
-      - name: Choose deploy target
+      - name: Choose the publish path
         id: target
         env:
           SITES_BASE_URL: ${{ vars.SITES_BASE_URL }}
         run: |
           if [ -n "$PR_NUMBER" ]; then
             path="previews/$SITE_ID/pr-$PR_NUMBER"
-            environment=preview
           else
             path="$SITE_ID"
-            environment=production
           fi
           {
             echo "path=$path"
-            echo "environment=$environment"
             echo "url=${SITES_BASE_URL%/}/$path/"
           } >> "$GITHUB_OUTPUT"
 
@@ -67,69 +62,14 @@ jobs:
         env:
           SITE_BASE: /${{ steps.target.outputs.path }}/
 
-      - name: Set up SSH
-        env:
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
-        run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
-
-      - name: Upload to the VPS
-        env:
-          REMOTE: ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
-          TARGET_PATH: ${{ steps.target.outputs.path }}
-        run: |
-          ssh "$REMOTE" "mkdir -p '$SITES_DIR/$TARGET_PATH'"
-          rsync -az --delete dist/ "$REMOTE:$SITES_DIR/$TARGET_PATH/"
-
-      - name: Notify Site Change Agents
-        if: vars.DEPLOY_WEBHOOK_URL != ''
-        env:
-          DEPLOY_WEBHOOK_URL: ${{ vars.DEPLOY_WEBHOOK_URL }}
-          DEPLOY_WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
-          ENVIRONMENT: ${{ steps.target.outputs.environment }}
-          URL: ${{ steps.target.outputs.url }}
-          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          body=$(jq -cn \
-            --arg site_id "$SITE_ID" \
-            --arg environment "$ENVIRONMENT" \
-            --arg url "$URL" \
-            --arg commit_sha "$COMMIT_SHA" \
-            --arg pull_request "$PR_NUMBER" \
-            '{site_id: $site_id, environment: $environment, url: $url, commit_sha: $commit_sha,
-              pull_request: (if $pull_request == "" then null else ($pull_request | tonumber) end)}')
-          signature=$(printf '%s' "$body" | openssl dgst -sha256 -hmac "$DEPLOY_WEBHOOK_SECRET" | sed 's/^.* //')
-          curl -fsS -X POST "$DEPLOY_WEBHOOK_URL" \
-            -H 'Content-Type: application/json' \
-            -H "X-Signature-256: sha256=$signature" \
-            --data "$body"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Summary
         env:
           URL: ${{ steps.target.outputs.url }}
-          ENVIRONMENT: ${{ steps.target.outputs.environment }}
-        run: |
-          echo "Deployed **$ENVIRONMENT**: $URL" >> "$GITHUB_STEP_SUMMARY"
-
-  remove-preview:
-    if: github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up SSH
-        env:
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
-        run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
-
-      - name: Delete the preview from the VPS
-        env:
-          REMOTE: ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
-        run: ssh "$REMOTE" "rm -rf -- '$SITES_DIR/previews/$SITE_ID/pr-$PR_NUMBER'"
+        run: echo "Built for **$URL** (published by Site Change Agents)" >> "$GITHUB_STEP_SUMMARY"
